@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "matrix.h"
 
 
@@ -38,6 +38,7 @@ public:
 		bool operator !=(const Matrix<N, N, Field>&other) {
 			return !(this == other);
 		}
+
 
 	//оператор []
 		std::vector<Field>& operator[](size_t id) {
