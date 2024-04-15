@@ -303,6 +303,16 @@ Matrix<N, N, Field> operator*(Matrix<N, N, Field>& a, Matrix<N, N, Field>& b) {
 	return result;
 }
 
+
 template<size_t N, typename Field = Rational>
 class SquareMatrix : public Matrix<N, N, Field> {
+public:
+	SquareMatrix& operator = (const Matrix<N, N, Field>& other) {
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < N; j++) {
+				this->data[i][j] = other[i][j];
+			}
+		}
+		return *this;
+	}
 };
