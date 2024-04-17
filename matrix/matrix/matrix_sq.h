@@ -26,7 +26,7 @@ public:
 		}
 	}
 
-	//Проверка на равенство: операторы == и !=.
+	//Оператор ==
 		bool operator==(const Matrix<N, N, Field>&other) {
 			for (int i = 0; i < N; i++) {
 				for (int j = 0; j < N; j++) {
@@ -167,7 +167,7 @@ public:
 				if (k == N) return Field(0);
 				else {
 					std::swap(temp[k], temp[u]);
-					temp = temp * std::pow(-1, k - u + 1);
+					temp = temp * std::pow(-1, k - u );
 				}
 			}
 			for (size_t i = u + 1; i < N; i++) {
@@ -186,45 +186,46 @@ public:
 	}
 
 	//Обратная матрица
-	Matrix<N, N, Field> invert() {
+	Matrix<N, N, Field>& invert() {
 		assert(this->det() != 0);
+		Matrix<N, N, Field> temp(*this);
 		Matrix<N, N, Field> e;
 		int k; Field F, temp_f;
-		Matrix<N, N, Field> temp = *this;
-		for (size_t u = 0; u < N - 1; u++) {
-			for (size_t i = u + 1; i < N; i++) {
+		for(int u = 0; u < N - 1; u++){
+			for (int i = u + 1; i < N; i++) {
 				F = temp[i][u] / temp[u][u];
-				for (size_t j = u; j < N; j++) {
-					temp_f = temp[u][j] * F;
+				for (int j = 0; j < N; j++) {
+					temp_f = F * temp[u][j];
 					temp[i][j] -= temp_f;
-					temp_f = e[u][j] * F;
+					temp_f = F * e[u][j];
 					e[i][j] -= temp_f;
 				}
 			}
 		}
 
 		for (int u = N - 1; u > 0; u--) {
-			for (int i = u - 1; i >= 0; i--) {
+			for (int i = u - 1; i > -1; i--) {
 				F = temp[i][u] / temp[u][u];
-				for (int j = u; j >= 0; j--) {
-					temp_f = temp[u][j] * F;
+				for (int j = 0; j < N; j++) {
+					temp_f = F * temp[u][j];
 					temp[i][j] -= temp_f;
-					temp_f = e[u][j] * F;
+					temp_f = F * e[u][j];
 					e[i][j] -= temp_f;
 				}
 			}
 		}
-		
+
 
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
 				e[i][j] /= temp[i][i];
 			}
+			temp[i][i]/= temp[i][i];
 		}
 		*this = e;
 		return *this;
 	}
-
+	
 	Matrix<N, N, Field> inverted() {
 		Matrix<N, N, Field> copy(this->data);
 		return copy.invert();
@@ -252,8 +253,7 @@ public:
 		}
 
 	//Вывод
-	template<size_t N, typename Field>
-	friend std::ostream& operator<<(std::ostream& os, Matrix<N, N, Field>& a) {
+	friend std::ostream& operator<<(std::ostream& os, Matrix<N, N, Field> a) {
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
 				os << a[i][j] << "\t";
@@ -264,11 +264,10 @@ public:
 	};
 
 	//Ввод
-	template<size_t N, typename Field>
 	friend std::istream& operator>>(std::istream& is, Matrix<N, N, Field>& a) {
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
-				std::cout << "[" << i << "][" << j << "]: ";
+				std::cout << "[" << i+1 << "][" << j+1 << "]: ";
 				is >> a[i][j];
 			}
 		}
@@ -303,16 +302,5 @@ Matrix<N, N, Field> operator*(Matrix<N, N, Field>& a, Matrix<N, N, Field>& b) {
 	return result;
 }
 
-
 template<size_t N, typename Field = Rational>
-class SquareMatrix : public Matrix<N, N, Field> {
-public:
-	SquareMatrix& operator = (const Matrix<N, N, Field>& other) {
-		for (int i = 0; i < N; i++) {
-			for (int j = 0; j < N; j++) {
-				this->data[i][j] = other[i][j];
-			}
-		}
-		return *this;
-	}
-};
+using SquareMatrix = Matrix<N, N, Field>;
