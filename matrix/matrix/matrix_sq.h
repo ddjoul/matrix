@@ -9,13 +9,14 @@ protected:
 public:
 	//Конструктор по умолчанию, создающий единичную матрицу
 	Matrix() {
+		this->data.clear();
 		this->data.resize(N, std::vector<Field>(N, 0));
 		for (int i = 0; i < N; i++) {
 			data[i][i] = 1;
 		}
 	}
 	
-	//Конструктор, создающий матрицу из vector<vector<T>>
+	//Конструктор, создающий матрицу из vector<vsector<T>>
 	Matrix(std::vector< std::vector<Field>> data) {
 		this->data.clear();
 		this->data.resize(N, std::vector<Field>(N, 0));
@@ -121,21 +122,99 @@ public:
 
 	//ранг
 	size_t rank() {
-		size_t k; Field F, temp_f;
-		Matrix<N, N, Field> temp = *this;
-		size_t rank_rows = 0, rank_colomn = 0;
-		for (size_t u = 0; u < N - 1; u++) {
-			k = u + 1;
-			if (temp[u][u] == Field(0)) {
-				while (k != N && temp[k][u] == Field(0)) {
-					k++;
+		size_t k, rank_rows = 0, rank_colomn = 0;
+		if constexpr (!std::is_integral_v<Field>) {
+			Field F, temp_f;
+			Matrix<N, N, Field> temp = *this;
+			for (size_t u = 0; u < N - 1; u++) {
+				k = u + 1;
+				if (temp[u][u] == Field(0)) {
+					while (k != N && temp[k][u] == Field(0)) {
+						k++;
+					}
+					if (k == N) break;
+					else {
+						std::swap(temp[k], temp[u]);
+					}
 				}
-				if (k == N) break;
-				else {
-					std::swap(temp[k], temp[u]);
+				if (k != N) {
+					for (size_t i = u + 1; i < N; i++) {
+						F = temp[i][u] / temp[u][u];
+						for (size_t j = u; j < N; j++) {
+							temp_f = temp[u][j] * F;
+							temp[i][j] -= temp_f;
+						}
+					}
 				}
 			}
-			if (k != N) {
+			for (int i = 0; i < N; i++) {
+				rank_colomn += nul_str(temp.getColumn(i));
+			}
+			for (int i = 0; i < N; i++) {
+				rank_rows += nul_str(temp.getRow(i));
+			}
+			return std::min(rank_colomn, rank_rows);
+		}
+		else {
+			double F, temp_f;
+			std::vector<std::vector<double>> v;
+			Matrix<N, N, double> temp(v);
+			for (int i = 0; i < N; i++) {
+				for (int j = 0; j < N; j++) {
+					temp[i][j] = static_cast<double>(this->operator[](i)[j]);
+				}
+			}
+			for (size_t u = 0; u < N- 1; u++) {
+				k = u + 1;
+				if (temp[u][u] == 0) {
+					while (k != N && temp[k][u] == 0) {
+						k++;
+					}
+					if (k == N) break;
+					else {
+						std::swap(temp[k], temp[u]);
+					}
+				}
+				if (k != N) {
+					for (size_t i = u + 1; i < N; i++) {
+						F = temp[i][u] / temp[u][u];
+						for (size_t j = u; j < N; j++) {
+							temp_f = temp[u][j] * F;
+							temp[i][j] -= temp_f;
+						}
+					}
+				}
+			}
+			for (int i = 0; i < N; i++) {
+				rank_colomn += nul_str(temp.getColumn(i));
+			}
+			for (int i = 0; i < N; i++) {
+				rank_rows += nul_str(temp.getRow(i));
+			}
+			return std::min(rank_colomn, rank_rows);
+
+		}
+		return 0;
+	}
+
+	//Определитель
+	Field det() {
+		size_t k;
+		if constexpr (!std::is_integral_v<Field>) {
+			Field F, temp_f;
+			Matrix<N, N, Field> temp = *this;
+			for (size_t u = 0; u < N - 1; u++) {
+				k = u + 1;
+				if (temp[u][u] == Field(0)) {
+					while (k != N && temp[k][u] == Field(0)) {
+						k++;
+					}
+					if (k == N) return Field(0);
+					else {
+						std::swap(temp[k], temp[u]);
+						temp = temp * std::pow(-1, k - u);
+					}
+				}
 				for (size_t i = u + 1; i < N; i++) {
 					F = temp[i][u] / temp[u][u];
 					for (size_t j = u; j < N; j++) {
@@ -144,48 +223,52 @@ public:
 					}
 				}
 			}
+			F = Field(1);
+			for (size_t i = 0; i < N; i++) {
+				F *= temp[i][i];
+			}
+			return F;
 		}
-		for (int i = 0; i < N; i++) {
-			rank_colomn += nul_str(temp.getColumn(i));
-		}
-		for (int i = 0; i < N; i++) {
-			rank_rows += nul_str(temp.getRow(i));
-		}
-		return std::min(rank_colomn, rank_rows);
-	}
+		else {
+			double F, temp_f;
+			std::vector<std::vector<double>> v;
+			Matrix<N, N, double> temp(v);
+			for (int i = 0; i < N; i++) {
+				for (int j = 0; j < N; j++) {
+					temp[i][j] = static_cast<double>(this->operator[](i)[j]);
+				}
+			}
+			for (size_t u = 0; u < N - 1; u++) {
+				k = u + 1;
+				if (temp[u][u] == Field(0)) {
+					while (k != N && temp[k][u] == Field(0)) {
+						k++;
+					}
+					if (k == N) return Field(0);
+					else {
+						std::swap(temp[k], temp[u]);
+						temp = temp * std::pow(-1, k - u);
+					}
+				}
+				for (size_t i = u + 1; i < N; i++) {
+					F = temp[i][u] / temp[u][u];
+					for (size_t j = u; j < N; j++) {
+						temp_f = temp[u][j] * F;
+						temp[i][j] -= temp_f;
+					}
+				}
+			}
+			F = Field(1);
+			for (size_t i = 0; i < N; i++) {
+				F *= temp[i][i];
+			}
+			return static_cast<Field>(F);
 
-	//Определитель
-	Field det() {
-		size_t k; Field F, temp_f;
-		Matrix<N, N, Field> temp = *this;
-		for (size_t u = 0; u < N - 1; u++) {
-			k = u + 1;
-			if (temp[u][u] == Field(0)) {
-				while (k != N && temp[k][u] == Field(0)) {
-					k++;
-				}
-				if (k == N) return Field(0);
-				else {
-					std::swap(temp[k], temp[u]);
-					temp = temp * std::pow(-1, k - u );
-				}
-			}
-			for (size_t i = u + 1; i < N; i++) {
-				F = temp[i][u] / temp[u][u];
-				for (size_t j = u; j < N; j++) {
-					temp_f = temp[u][j] * F;
-					temp[i][j] -= temp_f;
-				}
-			}
 		}
-		F = Field(1);
-		for (size_t i = 0; i < N; i++) {
-			F *= temp[i][i];
-		}
-		return F;
 	}
 
 	//Обратная матрица
+	template <typename T = Field, typename = std::enable_if_t<!std::is_integral<T>::value>>
 	Matrix<N, N, Field>& invert() {
 		assert(this->det() != 0);
 		Matrix<N, N, Field> temp(*this);
@@ -226,6 +309,7 @@ public:
 		return *this;
 	}
 	
+	template <typename T = Field, typename = std::enable_if_t<!std::is_integral<T>::value>>
 	Matrix<N, N, Field> inverted() {
 		Matrix<N, N, Field> copy(this->data);
 		return copy.invert();
