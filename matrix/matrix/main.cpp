@@ -6,15 +6,21 @@
 #include <vector>
 #include <ctime>
 
-//Жерносек Даниил, 11 группа
 int main() {
     srand(std::time(NULL));
-    std::vector<std::vector<Rational>> arr{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-    Matrix<3, 4, Rational> m1(arr);
-    Matrix<3, 4> m2(arr);
+
+    {
+        Matrix<100, 100> m3;
+    }
+
+    std::vector<std::vector<int>> arr{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    std::vector<std::vector<Rational>> arr0{ {1, 2, 3}, {4, 5, 6}, {7, 8, 9} };
+    Matrix<3, 4, int> m1(arr);
+    Matrix<3, 4, int> m2(arr);
+    Matrix<3, 4> m3(arr0);
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 4; j++) {
-            m2[i][j] = Rational(rand() % 6);
+            m2[i][j] = rand() % 6;
         }
     }
     std::cout << "m1<3, 4>:\n" << m1 << "rank m1:" << m1.rank();
@@ -28,7 +34,7 @@ int main() {
     std::cout << "sq_m1<3, 3>:\n" << sq_m1 << "trace sq_m1:" << sq_m1.trace() << "\ndet sq_m1:" << sq_m1.det();
     std::cout << "\nsq_m2<3>:\n" << sq_m2 << "trace sq_m2:" << sq_m2.trace() << "\ndet sq_m2:" << sq_m2.det();
     std::cout << "\ninverted:\n" << sq_m2.inverted();
-    std::cout << "\n sq_m2 * m2\n" << sq_m2 * m2;
+    std::cout << "\n sq_m2 * m3\n" << sq_m2 * m3;
     sq_m1 *= sq_m1;
     std::cout << "\n(sq_m1)^2\n" << sq_m1;
 }
